@@ -1,6 +1,6 @@
 {
   "functions": {
-    "server-chat-biblico/api/*.js": {
+    "server-chat-biblico/api/**/*.js": {
       "runtime": "nodejs22.x"
     }
   },
@@ -8,3 +8,4 @@
     { "source": "/api/(.*)", "destination": "/server-chat-biblico/api/$1" }
   ]
 }
+
