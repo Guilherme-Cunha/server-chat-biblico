@@ -1,11 +1,12 @@
 {
   "functions": {
     "server-chat-biblico/api/**/*.js": {
-      "runtime": "nodejs22.x"
+      "runtime": "nodejs18.x"
     }
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/server-chat-biblico/api/$1" }
   ]
 }
+
 
