@@ -1,11 +1,9 @@
 import express from "express";
-import bodyParser from "body-parser";
 import fetch from "node-fetch";
 
-const app = express();
-app.use(bodyParser.json());
+const router = express.Router();
 
-app.post("/api/chat", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { message } = req.body;
 
@@ -16,7 +14,7 @@ app.post("/api/chat", async (req, res) => {
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini", // ou "gpt-4o" se tiver acesso
+        model: "gpt-4o-mini", // ou "gpt-4o"
         messages: [
           { role: "system", content: "Você é um assistente bíblico." },
           { role: "user", content: message },
@@ -25,12 +23,17 @@ app.post("/api/chat", async (req, res) => {
     });
 
     const data = await response.json();
+
+    if (!data.choices || !data.choices.length) {
+      throw new Error("Resposta inválida da API OpenAI");
+    }
+
     res.json({ reply: data.choices[0].message.content });
 
   } catch (error) {
-    console.error(error);
+    console.error("Erro no chat API:", error);
     res.status(500).json({ error: "Erro no servidor" });
   }
 });
 
-export default app;
+export default router;
