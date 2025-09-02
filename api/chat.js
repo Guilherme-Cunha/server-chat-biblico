@@ -1,10 +1,11 @@
+import express from "express";
+import serverless from "serverless-http";
 import fetch from "node-fetch";
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Método não permitido" });
-  }
+const app = express();
+app.use(express.json());
 
+app.post("/", async (req, res) => {
   try {
     const { message } = req.body;
 
@@ -29,9 +30,11 @@ export default async function handler(req, res) {
       throw new Error("Resposta inválida da API OpenAI");
     }
 
-    res.status(200).json({ reply: data.choices[0].message.content });
-  } catch (error) {
-    console.error("Erro no chat API:", error);
+    res.json({ reply: data.choices[0].message.content });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Erro no servidor" });
   }
-}
+});
+
+export default serverless(app);
