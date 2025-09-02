@@ -1,43 +1,29 @@
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
+import OpenAI from "openai";
 
-const app = express();
-app.use(express.json());
-app.use(cors());
-
-// Rota de chat
-app.post("/chat", async (req, res) => {
-  const { question } = req.body;
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método não permitido" });
+  }
 
   try {
-    // Aqui você pode usar OpenAI ou outro modelo
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini", // pode trocar pelo modelo que preferir
-        messages: [
-          { role: "system", content: "Você é um assistente bíblico que responde com base na NTLH." },
-          { role: "user", content: question }
-        ],
-      }),
+    const { messages } = req.body;
+
+    if (!messages) {
+      return res.status(400).json({ error: "Mensagens não fornecidas" });
+    }
+
+    const client = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const data = await response.json();
-    const answer = data.choices[0].message.content;
+    const completion = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: messages,
+    });
 
-    res.json({ answer });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao processar a pergunta." });
+    return res.status(200).json({ reply: completion.choices[0].message });
+  } catch (error) {
+    console.error("Erro na API:", error);
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+}
